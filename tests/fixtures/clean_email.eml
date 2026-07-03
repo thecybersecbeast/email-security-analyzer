@@ -1,0 +1,21 @@
+From: Alice Johnson <alice.johnson@example.com>
+To: bob@example.org
+Subject: Notes from our meeting today
+Date: Wed, 01 Jul 2026 14:22:00 +0000
+Message-ID: <abc123@example.com>
+Return-Path: <alice.johnson@example.com>
+Received: from mail.example.com (mail.example.com [203.0.113.10]) by mx.example.org; Wed, 01 Jul 2026 14:22:05 +0000
+Authentication-Results: mx.example.org; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass
+Content-Type: text/plain; charset="utf-8"
+
+Hi Bob,
+
+Thanks for the productive discussion earlier. I've attached nothing here,
+just wanted to summarize the action items we agreed on:
+
+1. Finalize the Q3 roadmap by Friday
+2. Share the updated budget spreadsheet with finance
+3. Schedule a follow-up for next Tuesday
+
+Talk soon,
+Alice

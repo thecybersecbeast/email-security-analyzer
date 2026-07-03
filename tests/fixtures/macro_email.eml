@@ -1,0 +1,29 @@
+From: Billing <billing@vendor-invoices.net>
+To: victim@example.org
+Subject: Your invoice is attached
+Date: Wed, 01 Jul 2026 10:00:00 +0000
+Message-ID: <macro1@vendor-invoices.net>
+Authentication-Results: mx.example.org; spf=pass
+ smtp.mailfrom=vendor-invoices.net; dkim=pass; dmarc=pass
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============1251699568162447833=="
+
+--===============1251699568162447833==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Please find your invoice attached.
+
+--===============1251699568162447833==
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="Invoice.docx"
+MIME-Version: 1.0
+
+UEsDBBQAAAAAAGlT41zHHBc8CAAAAAgAAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbDxUeXBlcy8+
+UEsDBBQAAAAAAGlT41xsPB5EDgAAAA4AAAATAAAAd29yZC92YmFQcm9qZWN0LmJpbmZha2UtdmJh
+LWJ5dGVzUEsBAhQDFAAAAAAAaVPjXMccFzwIAAAACAAAABMAAAAAAAAAAAAAAIABAAAAAFtDb250
+ZW50X1R5cGVzXS54bWxQSwECFAMUAAAAAABpU+NcbDweRA4AAAAOAAAAEwAAAAAAAAAAAAAAgAE5
+AAAAd29yZC92YmFQcm9qZWN0LmJpblBLBQYAAAAAAgACAIIAAAB4AAAAAAA=
+
+--===============1251699568162447833==--
