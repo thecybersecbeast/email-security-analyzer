@@ -1,0 +1,19 @@
+#
+# This file was generated to pin the versions used by `pip install -e ".[dev,dns]"`.
+# It intentionally has no hashes yet — regenerate it with `pip-compile` (from
+# pip-tools) whenever you bump a version, which will also add hashes:
+#
+#   pip install pip-tools
+#   pip-compile pyproject.toml --extra dev --extra dns -o requirements.lock
+#
+# This project has no hard runtime dependencies (dependencies = [] in
+# pyproject.toml); everything below comes from the optional "dev" and "dns"
+# extras used for local development, testing, and CI.
+#
+build==1.4.3
+dnspython==2.8.0
+mypy==1.20.1
+mypy-extensions==1.0.0
+pytest==9.0.3
+pytest-cov==7.1.0
+ruff==0.15.10

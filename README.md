@@ -136,6 +136,11 @@ mypy src                  # type-check
 pytest                    # tests + coverage
 ```
 
+Pinned versions for `dev`+`dns` extras live in `requirements.lock`
+(regenerate with `pip-compile pyproject.toml --extra dev --extra dns -o
+requirements.lock` after bumping a dependency). Dependabot opens weekly PRs
+for both pip and GitHub Actions updates.
+
 Test fixtures live in `tests/fixtures/` and include a clean email, a
 phishing email (failed auth, typosquatted URL, disguised executable
 attachment, urgency/credential-harvesting language), and a macro-laced
