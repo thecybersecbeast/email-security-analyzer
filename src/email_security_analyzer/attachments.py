@@ -25,7 +25,13 @@ BENIGN_LOOKING_EXTENSIONS = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", "
 
 
 def _hash_bytes(data: bytes) -> tuple[str, str]:
-    return hashlib.md5(data).hexdigest(), hashlib.sha256(data).hexdigest()
+    # MD5 is used here only as a fast file-identification fingerprint
+    # (alongside SHA-256), never for any security/cryptographic purpose —
+    # usedforsecurity=False documents that for both bandit and future readers.
+    return (
+        hashlib.md5(data, usedforsecurity=False).hexdigest(),
+        hashlib.sha256(data).hexdigest(),
+    )
 
 
 def _extension_of(filename: str) -> str:

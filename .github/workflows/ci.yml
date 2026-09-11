@@ -25,13 +25,18 @@ jobs:
           cache: pip
 
       - name: Install package with dev extras
-        run: pip install -e ".[dev,dns]"
+        run: pip install -e ".[dev,dns,whois,imap]"
 
       - name: Lint (ruff)
         run: ruff check src tests
 
       - name: Type-check (mypy)
         run: mypy src
+
+      - name: Security lint (bandit)
+        run: |
+          pip install bandit
+          bandit -r src -ll
 
       - name: Test with coverage (pytest)
         run: pytest
