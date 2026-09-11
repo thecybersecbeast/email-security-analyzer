@@ -1,0 +1,51 @@
+<svg viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace">
+  <defs>
+    <clipPath id="round">
+      <rect x="0" y="0" width="860" height="560" rx="12" ry="12"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect x="0" y="0" width="860" height="560" fill="#0d1117"/>
+
+    <!-- title bar -->
+    <rect x="0" y="0" width="860" height="34" fill="#161b22"/>
+    <circle cx="20" cy="17" r="6" fill="#ff5f56"/>
+    <circle cx="40" cy="17" r="6" fill="#ffbd2e"/>
+    <circle cx="60" cy="17" r="6" fill="#27c93f"/>
+    <text x="430" y="22" fill="#8b949e" font-size="13" text-anchor="middle">email-security-analyzer</text>
+
+    <!-- body -->
+    <g font-size="14" fill="#c9d1d9">
+      <text x="20" y="60" fill="#58a6ff">$ email-security-analyzer analyze phishing_email.eml</text>
+
+      <text x="20" y="92" fill="#8b949e">============================================================</text>
+      <text x="20" y="112" fill="#e3b341" font-weight="bold">EMAIL SECURITY ANALYSIS REPORT</text>
+      <text x="20" y="132" fill="#8b949e">============================================================</text>
+
+      <text x="20" y="158">Subject   : URGENT: Verify your account within 24 hours</text>
+      <text x="20" y="178">From      : PayPal Support &lt;support@paypa1-secure-verify.top&gt;</text>
+      <text x="20" y="198">Reply-To  : recover@totally-not-a-scam.ru</text>
+
+      <text x="20" y="228" fill="#e3b341" font-weight="bold">-- Header Analysis --</text>
+      <text x="20" y="250" fill="#f85149">  [FLAG (+15)] from_reply_to_mismatch: From domain does not match Reply-To domain...</text>
+      <text x="20" y="270" fill="#f85149">  [FLAG (+20)] display_name_impersonation: Display name references 'paypal' but ...</text>
+
+      <text x="20" y="300" fill="#e3b341" font-weight="bold">-- Authentication (SPF / DKIM / DMARC) --</text>
+      <text x="20" y="322" fill="#f85149">  [SPF=fail]  Reported by receiving MTA: spf=fail</text>
+      <text x="20" y="342" fill="#f85149">  [DKIM=fail] Reported by receiving MTA: dkim=fail</text>
+      <text x="20" y="362" fill="#f85149">  [DMARC=fail] Reported by receiving MTA: dmarc=fail</text>
+
+      <text x="20" y="392" fill="#e3b341" font-weight="bold">-- URLs --</text>
+      <text x="20" y="414" fill="#f85149">  [CRITICAL] https://paypa1-secure-verify.top/login</text>
+      <text x="40" y="434">    ! Domain closely resembles brand 'paypal.com' (typosquat)</text>
+      <text x="40" y="454">    ! Top-level domain '.top' is disproportionately used for phishing</text>
+
+      <text x="20" y="484" fill="#e3b341" font-weight="bold">-- Risk Score --</text>
+      <text x="20" y="506">  headers              +35    authentication       +50</text>
+      <text x="20" y="524">  urls                 +48    TOTAL                100/100</text>
+
+      <text x="20" y="550" fill="#f85149" font-weight="bold">  VERDICT: REJECT</text>
+    </g>
+  </g>
+</svg>
