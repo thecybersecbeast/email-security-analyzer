@@ -22,3 +22,19 @@ def test_benign_email_has_no_findings():
         "Lunch tomorrow?", "Hey, are you free for lunch tomorrow at noon?"
     )
     assert findings == []
+
+
+def test_financial_lure_detected():
+    findings = analyze_phishing_content(
+        "Congratulations!", "You've won a prize. Please purchase gift cards to claim your reward."
+    )
+    categories = {f.category for f in findings}
+    assert "financial_lure" in categories
+
+
+def test_financial_lure_not_triggered_by_unrelated_text():
+    findings = analyze_phishing_content(
+        "Team lunch", "Free coffee in the break room today, no strings attached."
+    )
+    categories = {f.category for f in findings}
+    assert "financial_lure" not in categories

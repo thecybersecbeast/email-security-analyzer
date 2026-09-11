@@ -27,6 +27,18 @@ GENERIC_GREETING_PATTERNS = [
     r"\bdear account holder\b",
 ]
 
+# Financial-lure phrasing: promises of money, refunds, prizes, or gift-card
+# requests. Distinct from credential harvesting (which asks for secrets) and
+# urgency (which pressures speed) — this category is about the *bait*, a
+# very common ingredient in advance-fee, gift-card, and lottery-style scams.
+FINANCIAL_LURE_PATTERNS = [
+    r"\byou('ve| have) won\b", r"\bclaim your (prize|reward|refund)\b",
+    r"\btax refund\b", r"\bunclaimed (funds|money|prize)\b",
+    r"\bpurchase (a |some )?gift cards?\b", r"\bgift card codes?\b",
+    r"\bwire transfer\b", r"\bcongratulations you\b",
+    r"\bfree (gift|cash|money)\b",
+]
+
 
 def _scan(patterns: list[str], text: str) -> list[str]:
     hits = []
@@ -62,6 +74,19 @@ def analyze_phishing_content(subject: str, body_text: str) -> list[PhishingFindi
                        f"({len(credential_hits)} match(es)).",
                 severity=Severity.HIGH,
                 weight=min(15 * len(credential_hits), 30),
+            )
+        )
+
+    financial_hits = _scan(FINANCIAL_LURE_PATTERNS, combined)
+    if financial_hits:
+        findings.append(
+            PhishingFinding(
+                category="financial_lure",
+                detail=f"Detected financial-bait phrasing — promised money, prizes, "
+                       f"or a gift-card request ({len(financial_hits)} match(es)), "
+                       f"a hallmark of advance-fee and gift-card scams.",
+                severity=Severity.HIGH,
+                weight=min(15 * len(financial_hits), 30),
             )
         )
 
