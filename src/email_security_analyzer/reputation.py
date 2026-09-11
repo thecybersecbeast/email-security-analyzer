@@ -11,10 +11,9 @@ the pipeline never depends on it.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from .models import Severity
+from .models import DomainAgeResult, severity_from_weight
 
 # Weight tiers by domain age. Tune to taste.
 _AGE_WEIGHTS = (
@@ -22,16 +21,6 @@ _AGE_WEIGHTS = (
     (7, 20),      # < 7 days old
     (30, 10),     # < 30 days old
 )
-
-
-@dataclass
-class DomainAgeResult:
-    domain: str
-    age_days: int | None
-    result: str  # "checked" | "unknown"
-    detail: str
-    severity: Severity = Severity.INFO
-    weight: int = 0
 
 
 def check_domain_age(domain: str) -> DomainAgeResult:
@@ -81,13 +70,7 @@ def check_domain_age(domain: str) -> DomainAgeResult:
             weight = tier_weight
             break
 
-    severity = Severity.INFO
-    if weight >= 30:
-        severity = Severity.CRITICAL
-    elif weight >= 20:
-        severity = Severity.HIGH
-    elif weight >= 10:
-        severity = Severity.MEDIUM
+    severity = severity_from_weight(weight, critical=30, high=20, medium=10)
 
     detail = f"Domain '{domain}' was registered {age_days} day(s) ago."
     if weight:

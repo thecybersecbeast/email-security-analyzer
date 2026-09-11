@@ -32,3 +32,14 @@ def test_url_shortener_flagged():
 def test_punycode_domain_flagged():
     finding = analyze_url("https://xn--pypal-4ve.com/login")
     assert any("punycode" in r for r in finding.reasons)
+
+
+def test_suspicious_tld_flagged():
+    finding = analyze_url("https://free-gift-cards.top/claim")
+    assert finding.weight > 0
+    assert any(".top" in r for r in finding.reasons)
+
+
+def test_common_tld_not_flagged_for_tld_alone():
+    finding = analyze_url("https://example.com/newsletter")
+    assert not any("Top-level domain" in r for r in finding.reasons)

@@ -18,11 +18,14 @@ DELIVER messages are left untouched.
 from __future__ import annotations
 
 import imaplib
+import logging
 import time
 from collections.abc import Callable, Iterator
 
 from ..analyzer import EmailAnalyzer
 from ..models import AnalysisResult, Verdict
+
+logger = logging.getLogger(__name__)
 
 _ACTION_FOLDERS = {Verdict.QUARANTINE: "Quarantine", Verdict.REJECT: "Rejected"}
 
@@ -31,10 +34,11 @@ def _apply_imap_action(conn: imaplib.IMAP4, uid: bytes, verdict: Verdict) -> Non
     folder = _ACTION_FOLDERS.get(verdict)
     if folder is None:
         return
+    uid_str = uid.decode() if isinstance(uid, bytes) else str(uid)
     conn.create(folder)  # no-op (returns NO) if it already exists; ignored
-    status, _ = conn.uid("COPY", uid, folder)
+    status, _ = conn.uid("COPY", uid_str, folder)
     if status == "OK":
-        conn.uid("STORE", uid, "+FLAGS", "(\\Deleted)")
+        conn.uid("STORE", uid_str, "+FLAGS", "(\\Deleted)")
         conn.expunge()
 
 
@@ -60,25 +64,30 @@ def watch_imap_polling(
     conn = conn_cls(host, port) if port else conn_cls(host)
     conn.login(username, password)
     conn.select(mailbox)
+    logger.info("Polling IMAP mailbox %r on %s every %.1fs", mailbox, host, poll_interval)
 
     processed = 0
     try:
         while stop_after is None or processed < stop_after:
-            status, data = conn.uid("SEARCH", None, "UNSEEN")
+            status, data = conn.uid("SEARCH", None, "UNSEEN")  # type: ignore[arg-type]  # charset=None is valid at runtime
             if status == "OK" and data and data[0]:
                 for uid in data[0].split():
-                    status, msg_data = conn.uid("FETCH", uid, "(RFC822)")
+                    status, msg_data = conn.uid("FETCH", uid.decode(), "(RFC822)")
                     if status != "OK" or not msg_data or msg_data[0] is None:
                         continue
                     raw = msg_data[0][1]
 
                     try:
                         result = analyzer.analyze_bytes(raw)
-                    except Exception as exc:  # noqa: BLE001
-                        print(f"[watch] failed to analyze uid={uid!r}: {exc}")
+                    except Exception:  # noqa: BLE001
+                        logger.exception("Failed to analyze uid=%r; skipping.", uid)
                         continue
 
                     _apply_imap_action(conn, uid, result.risk.verdict)
+                    logger.info(
+                        "uid=%r verdict=%s score=%d",
+                        uid, result.risk.verdict.value, result.risk.total,
+                    )
 
                     if on_result:
                         on_result(uid, result)
@@ -93,7 +102,7 @@ def watch_imap_polling(
         try:
             conn.logout()
         except Exception:
-            pass
+            logger.debug("IMAP logout failed during cleanup; ignoring.", exc_info=True)
 
 
 def watch_imap_idle(
@@ -129,6 +138,7 @@ def watch_imap_idle(
     client = IMAPClient(host, port=port, ssl=use_ssl)
     client.login(username, password)
     client.select_folder(mailbox)
+    logger.info("Watching IMAP mailbox %r on %s via IDLE (push, no polling delay)", mailbox, host)
 
     processed = 0
     try:
@@ -148,8 +158,8 @@ def watch_imap_idle(
 
                 try:
                     result = analyzer.analyze_bytes(raw)
-                except Exception as exc:  # noqa: BLE001
-                    print(f"[watch] failed to analyze uid={uid}: {exc}")
+                except Exception:  # noqa: BLE001
+                    logger.exception("Failed to analyze uid=%s; skipping.", uid)
                     continue
 
                 folder = _ACTION_FOLDERS.get(result.risk.verdict)
@@ -158,6 +168,11 @@ def watch_imap_idle(
                         client.create_folder(folder)
                     client.copy([uid], folder)
                     client.delete_messages([uid])
+
+                logger.info(
+                    "uid=%s verdict=%s score=%d",
+                    uid, result.risk.verdict.value, result.risk.total,
+                )
 
                 if on_result:
                     on_result(uid, result)
@@ -170,4 +185,4 @@ def watch_imap_idle(
         try:
             client.logout()
         except Exception:
-            pass
+            logger.debug("IMAP logout failed during cleanup; ignoring.", exc_info=True)

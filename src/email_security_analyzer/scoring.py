@@ -5,6 +5,7 @@ from __future__ import annotations
 from .models import (
     AttachmentInfo,
     AuthResult,
+    DomainAgeResult,
     HeaderFinding,
     PhishingFinding,
     RiskScore,
@@ -23,6 +24,7 @@ def compute_risk_score(
     attachments: list[AttachmentInfo],
     urls: list[URLFinding],
     phishing_findings: list[PhishingFinding],
+    domain_age: DomainAgeResult | None = None,
 ) -> RiskScore:
     breakdown: dict[str, int] = {}
 
@@ -45,6 +47,9 @@ def compute_risk_score(
     phishing_total = sum(p.weight for p in phishing_findings)
     if phishing_total:
         breakdown["phishing_content"] = phishing_total
+
+    if domain_age is not None and domain_age.weight:
+        breakdown["domain_reputation"] = domain_age.weight
 
     total = min(sum(breakdown.values()), 100)
 

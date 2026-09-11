@@ -9,7 +9,7 @@ description = "A detection engine for suspicious, fraudulent, and malicious emai
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "Your Name" }]
+authors = [{ name = "thecybersecbeast" }]
 keywords = ["email", "security", "phishing", "spf", "dkim", "dmarc", "cybersecurity"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -24,6 +24,8 @@ dependencies = []
 
 [project.optional-dependencies]
 dns = ["dnspython>=2.4"]
+whois = ["python-whois>=0.9"]
+imap = ["imapclient>=3.0"]
 dev = [
     "pytest>=7.4",
     "pytest-cov>=4.1",
@@ -36,8 +38,8 @@ dev = [
 email-security-analyzer = "email_security_analyzer.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/YOUR_USERNAME/email-security-analyzer"
-Issues = "https://github.com/YOUR_USERNAME/email-security-analyzer/issues"
+Homepage = "https://github.com/thecybersecbeast/email-security-analyzer"
+Issues = "https://github.com/thecybersecbeast/email-security-analyzer/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

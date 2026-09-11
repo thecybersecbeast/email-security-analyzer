@@ -21,6 +21,37 @@ class Verdict(str, Enum):
     REJECT = "reject"
 
 
+def severity_from_weight(weight: int, *, critical: int, high: int, medium: int) -> Severity:
+    """Map a numeric weight to a Severity given a module's own thresholds.
+
+    Shared by ``urls.py`` and ``reputation.py``, which both derive a
+    severity from an accumulated weight but use different threshold sets
+    for their own signal — factored out here instead of each module
+    duplicating the same if/elif ladder.
+    """
+    if weight >= critical:
+        return Severity.CRITICAL
+    if weight >= high:
+        return Severity.HIGH
+    if weight >= medium:
+        return Severity.MEDIUM
+    if weight > 0:
+        return Severity.LOW
+    return Severity.INFO
+
+
+@dataclass
+class DomainAgeResult:
+    """Result of a WHOIS-based sender domain-age reputation check."""
+
+    domain: str
+    age_days: int | None
+    result: str  # "checked" | "unknown"
+    detail: str
+    severity: Severity = Severity.INFO
+    weight: int = 0
+
+
 @dataclass
 class HeaderFinding:
     check: str
@@ -101,9 +132,10 @@ class AnalysisResult:
     urls: list[URLFinding]
     phishing_findings: list[PhishingFinding]
     risk: RiskScore
+    domain_age: DomainAgeResult | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        result: dict[str, Any] = {
             "subject": self.subject,
             "sender": self.sender,
             "reply_to": self.reply_to,
@@ -114,3 +146,6 @@ class AnalysisResult:
             "phishing_findings": [vars(p) | {"severity": p.severity.value} for p in self.phishing_findings],
             "risk": self.risk.as_dict(),
         }
+        if self.domain_age is not None:
+            result["domain_age"] = vars(self.domain_age) | {"severity": self.domain_age.severity.value}
+        return result

@@ -1,0 +1,44 @@
+# Local development / manual testing convenience wrapper around the
+# Dockerfile. This is a CLI tool, not a long-running service — these
+# are one-shot `run` targets, not something you `up` and leave running
+# (except `watch-maildir`, which is meant to keep watching).
+#
+# Usage:
+#   docker compose build
+#   docker compose run --rm analyze samples/message.eml
+#   docker compose run --rm analyze-json samples/message.eml
+#   docker compose run --rm watch-maildir
+#
+# `watch-imap` reads EMAIL_ANALYZER_IMAP_PASSWORD from .env (copy
+# .env.example to .env and fill it in first).
+
+services:
+  analyze:
+    build: .
+    volumes:
+      - ./samples:/samples:ro
+    entrypoint: ["email-security-analyzer", "analyze"]
+
+  analyze-json:
+    build: .
+    volumes:
+      - ./samples:/samples:ro
+    entrypoint: ["email-security-analyzer", "analyze", "--json"]
+
+  watch-maildir:
+    build: .
+    volumes:
+      - ./Maildir:/Maildir
+    entrypoint: ["email-security-analyzer", "watch", "--maildir", "/Maildir/new"]
+
+  watch-imap:
+    build: .
+    env_file:
+      - .env
+    entrypoint:
+      - "email-security-analyzer"
+      - "watch"
+      - "--imap-host"
+      - "${IMAP_HOST:-imap.gmail.com}"
+      - "--imap-user"
+      - "${IMAP_USER:?set IMAP_USER in .env}"

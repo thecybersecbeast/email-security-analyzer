@@ -59,6 +59,11 @@ def to_text(result: AnalysisResult) -> str:
         for p in result.phishing_findings:
             lines.append(f"  [{p.category}] (+{p.weight}) {p.detail}")
 
+    if result.domain_age is not None and result.domain_age.result == "checked":
+        lines.append("")
+        lines.append("-- Domain Reputation --")
+        lines.append(f"  {result.domain_age.detail}")
+
     lines.append("")
     lines.append("-- Risk Score --")
     for category, weight in result.risk.breakdown.items():
