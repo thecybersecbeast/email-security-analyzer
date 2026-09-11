@@ -8,6 +8,7 @@ and phishing indicators, producing a weighted risk score and a
 deliver / quarantine / reject verdict.
 """
 
+from .analyzer import EmailAnalyzer
 from .models import (
     AnalysisResult,
     AttachmentInfo,
@@ -18,7 +19,6 @@ from .models import (
     URLFinding,
     Verdict,
 )
-from .analyzer import EmailAnalyzer
 
 __version__ = "0.1.0"
 
