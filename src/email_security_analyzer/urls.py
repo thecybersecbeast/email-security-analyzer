@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from urllib.parse import urlparse
 
-from .models import Severity, URLFinding
+from .models import URLFinding, severity_from_weight
 
 URL_RE = re.compile(r"https?://[^\s\"'<>\)\]]+", re.IGNORECASE)
 
@@ -23,6 +23,27 @@ PROTECTED_BRAND_DOMAINS = [
 ]
 
 IP_HOST_RE = re.compile(r"^\d{1,3}(\.\d{1,3}){3}$")
+
+# TLDs with a track record of being disproportionately used in phishing and
+# malware-delivery campaigns, generally because they are free, cheap, or
+# loosely moderated. This is a supplementary signal, not a standalone
+# verdict — plenty of legitimate sites use these too, so the weight is kept
+# modest relative to stronger signals like typosquatting or IP-literal URLs.
+# Source: recurring findings across public abuse-tracking reports (e.g.
+# Spamhaus, Interisle) for .zip/.mov (Google's 2023 gTLD rollout was
+# immediately abused for archive/video-lure phishing), classic free
+# dynamic-DNS-style TLDs (.tk/.ml/.ga/.cf/.gq from Freenom), and a handful
+# of cheap new gTLDs favored for disposable phishing domains.
+SUSPICIOUS_TLDS = {
+    "zip", "mov", "top", "xyz", "tk", "ml", "ga", "cf", "gq",
+    "work", "click", "link", "country", "stream", "gdn", "kim",
+    "loan", "men", "date", "review", "party", "trade", "webcam",
+}
+
+
+def _tld(host: str) -> str:
+    parts = host.rsplit(".", 1)
+    return parts[-1] if len(parts) == 2 else ""
 
 
 def _levenshtein(a: str, b: str) -> int:
@@ -128,6 +149,14 @@ def analyze_url(url: str) -> URLFinding:
         reasons.append(f"Unusually deep subdomain chain ({host}).")
         weight += 10
 
+    tld = _tld(host)
+    if tld in SUSPICIOUS_TLDS:
+        reasons.append(
+            f"Top-level domain '.{tld}' is disproportionately used for "
+            f"phishing/malware delivery — treat links here with extra scrutiny."
+        )
+        weight += 8
+
     match = _closest_brand_match(host)
     if match:
         brand, distance = match
@@ -144,16 +173,7 @@ def analyze_url(url: str) -> URLFinding:
 
     finding.reasons = reasons
     finding.weight = weight
-    if weight >= 40:
-        finding.severity = Severity.CRITICAL
-    elif weight >= 20:
-        finding.severity = Severity.HIGH
-    elif weight >= 10:
-        finding.severity = Severity.MEDIUM
-    elif weight > 0:
-        finding.severity = Severity.LOW
-    else:
-        finding.severity = Severity.INFO
+    finding.severity = severity_from_weight(weight, critical=40, high=20, medium=10)
 
     return finding
 
