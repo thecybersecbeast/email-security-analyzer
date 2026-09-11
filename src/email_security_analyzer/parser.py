@@ -3,24 +3,25 @@
 from __future__ import annotations
 
 from email import policy
-from email.message import Message
+from email.message import EmailMessage
 from email.parser import BytesParser
 from pathlib import Path
+from typing import cast
 
 
-def parse_eml_bytes(data: bytes) -> Message:
-    """Parse raw RFC 5322 message bytes into an email.message.Message."""
-    return BytesParser(policy=policy.default).parsebytes(data)
+def parse_eml_bytes(data: bytes) -> EmailMessage:
+    """Parse raw RFC 5322 message bytes into an email.message.EmailMessage."""
+    return cast(EmailMessage, BytesParser(policy=policy.default).parsebytes(data))
 
 
-def parse_eml_file(path: str | Path) -> Message:
+def parse_eml_file(path: str | Path) -> EmailMessage:
     """Parse a .eml file from disk."""
     path = Path(path)
     with path.open("rb") as fh:
-        return BytesParser(policy=policy.default).parse(fh)
+        return cast(EmailMessage, BytesParser(policy=policy.default).parse(fh))
 
 
-def get_body_text(msg: Message) -> str:
+def get_body_text(msg: EmailMessage) -> str:
     """Extract the best-effort plain text body (falls back to stripped HTML)."""
     if msg.is_multipart():
         # Prefer text/plain, fall back to text/html
@@ -45,7 +46,7 @@ def get_body_text(msg: Message) -> str:
     return ""
 
 
-def _decode_part(part: Message) -> str:
+def _decode_part(part: EmailMessage) -> str:
     try:
         content = part.get_content()
         if isinstance(content, bytes):
@@ -53,12 +54,14 @@ def _decode_part(part: Message) -> str:
         return str(content)
     except Exception:
         payload = part.get_payload(decode=True)
+        if isinstance(payload, bytes):
+            return payload.decode(errors="replace")
         if payload is None:
             return ""
-        return payload.decode(errors="replace")
+        return str(payload)
 
 
-def iter_attachments(msg: Message):
+def iter_attachments(msg: EmailMessage):
     """Yield (filename, content_type, raw_bytes) for every attachment/part with a filename."""
     if not msg.is_multipart():
         return
