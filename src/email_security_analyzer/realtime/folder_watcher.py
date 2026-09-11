@@ -15,6 +15,7 @@ avoids the platform-specific quirks of OS-level filesystem-event APIs.
 
 from __future__ import annotations
 
+import logging
 import time
 from collections.abc import Callable, Iterator
 from pathlib import Path
@@ -22,6 +23,8 @@ from pathlib import Path
 from ..analyzer import EmailAnalyzer
 from ..models import AnalysisResult
 from .actions import apply_maildir_action
+
+logger = logging.getLogger(__name__)
 
 
 def watch_maildir(
@@ -47,6 +50,7 @@ def watch_maildir(
     maildir_new = Path(maildir_new)
     maildir_new.mkdir(parents=True, exist_ok=True)
     base_dir = maildir_new.parent
+    logger.info("Watching Maildir folder %s (polling every %.1fs)", maildir_new, poll_interval)
 
     processed = 0
     seen: set[str] = set()
@@ -59,11 +63,15 @@ def watch_maildir(
 
             try:
                 result = analyzer.analyze_file(eml_path)
-            except Exception as exc:  # noqa: BLE001 - one bad file must never kill the watcher
-                print(f"[watch] failed to analyze {eml_path}: {exc}")
+            except Exception:  # noqa: BLE001 - one bad file must never kill the watcher
+                logger.exception("Failed to analyze %s; skipping.", eml_path)
                 continue
 
             apply_maildir_action(eml_path, result.risk.verdict.value, base_dir)
+            logger.info(
+                "%s verdict=%s score=%d",
+                eml_path.name, result.risk.verdict.value, result.risk.total,
+            )
 
             if on_result:
                 on_result(eml_path, result)
